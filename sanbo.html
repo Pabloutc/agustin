@@ -1,0 +1,122 @@
+<html>
+    <head>
+      <style>
+        table {
+          width: 100%;
+          border-collapse: collapse;
+          margin-top: 20px;
+        }
+
+        th, td {
+          border: 1px solid #ddd;
+          padding: 8px;
+          text-align: left;
+        }
+
+        th {
+          background-color: #f2f2f2;
+        }
+
+        tr:hover {
+          background-color: #f5f5f5;
+        }
+      </style>
+    </head>
+    <body>
+        <form id="crud-form">
+          <label for="nombre">Nombre:</label>
+          <input type="text" id="nombre" required>
+
+          <label for="descripcion">Descripcion:</label>
+          <input type="text" id="descripcion" required>
+
+          <label for="precio">Precio:</label>
+          <input type="number" id="precio" step="0.01" required>
+          <button type="button" onclick="crearRegistro()">guardar</button>
+        </form>
+        <div id="platosList"></div>
+        <table id="tablaPlatos">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Descripcion</th>
+              <th>Precio</th>
+            </tr>
+          </thead>
+          <tbody id="tablaBody"></tbody>
+        </table>
+        <script type="module">
+          // Import the functions you need from the SDKs you need
+
+              import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+              import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+              // TODO: Add SDKs for Firebase products that you want to use
+
+              // https://firebase.google.com/docs/web/setup#available-libraries
+
+
+              // Your web app's Firebase configuration
+
+              const firebaseConfig = {
+
+                apiKey: "AIzaSyDMBpqzEAuwjWvWo0LdwwT583_rj6YCWOs",
+
+                authDomain: "prueba-pablo-a99be.firebaseapp.com",
+
+                databaseURL: "https://prueba-pablo-a99be-default-rtdb.firebaseio.com",
+
+                projectId: "prueba-pablo-a99be",
+
+                storageBucket: "prueba-pablo-a99be.appspot.com",
+
+                messagingSenderId: "741796966635",
+
+                appId: "1:741796966635:web:52bd01277cf5543ff58eae"
+
+              };
+
+
+            // Initialize Firebase
+            const app = initializeApp(firebaseConfig);
+            const database = getDatabase(app);
+
+            window.crearRegistro = function () {
+                const nombre = document.getElementById("nombre").value;
+                const descripcion = document.getElementById("descripcion").value;
+                const precio = document.getElementById("precio").value;
+
+                push(
+                    ref(database, 'septimo'),
+                    {
+                        Nombre: nombre,
+                        Descripcion: descripcion,
+                        Precio: precio
+                    }
+                );
+                document.getElementById("nombre").value="";
+                document.getElementById("descripcion").value="";
+                document.getElementById("precio").value="";
+
+            }
+            const tablaBody = document.getElementById("tablaBody");
+            const platosRef = ref(database, 'septimo');
+
+            onValue(platosRef, (snapshot) => {
+              const platos = snapshot.val();
+              tablaBody.innerHTML = "";
+
+              for (const key in platos) {
+                if (platos.hasOwnProperty(key)) {
+                  const plato = platos[key];
+                  const fila = `<tr>
+                                  <td>${plato.Nombre}</td>
+                                  <td>${plato.Descripcion}</td>
+                                  <td>${plato.Precio}</td>
+                                </tr>`;
+                  tablaBody.innerHTML += fila;
+                }
+              }
+            });
+          </script>
+    </body>
+</html>
