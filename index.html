@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CRUD Restaurante</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, push, onValue, remove, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDMBpqzEAuwjWvWo0LdwwT583_rj6YCWOs",
+      authDomain: "prueba-pablo-a99be.firebaseapp.com",
+      databaseURL: "https://prueba-pablo-a99be-default-rtdb.firebaseio.com",
+      projectId: "prueba-pablo-a99be",
+      storageBucket: "prueba-pablo-a99be.appspot.com",
+      messagingSenderId: "741796966635",
+      appId: "1:741796966635:web:52bd01277cf5543ff58eae"
+      // Configuración de Firebase
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const database = getDatabase(app);
+
+    window.crearRegistro = function () {
+      const nombre = document.getElementById("nombre").value;
+      const descripcion = document.getElementById("descripcion").value;
+      const precio = document.getElementById("precio").value;
+      const hora = document.getElementById("hora").value;
+
+      push(
+        ref(database, 'Pablo_Pullopaxi'),
+        {
+          Nombre: nombre,
+          Descripcion: descripcion,
+          Precio: precio,
+          Hora: hora
+        }
+      );
+      document.getElementById("nombre").value = "";
+      document.getElementById("descripcion").value = "";
+      document.getElementById("precio").value = "";
+      document.getElementById("hora").value = "";
+    };
+
+    const tablaBody = document.getElementById("tablaBody");
+    const platosRef = ref(database, 'Pablo_Pullopaxi');
+
+    onValue(platosRef, (snapshot) => {
+      const platos = snapshot.val();
+      tablaBody.innerHTML = "";
+
+      for (const key in platos) {
+        if (platos.hasOwnProperty(key)) {
+          const plato = platos[key];
+          const fila = `<tr id="fila-${key}">
+                          <td contenteditable="true" data-field="Nombre">${plato.Nombre}</td>
+                          <td contenteditable="true" data-field="Descripcion">${plato.Descripcion}</td>
+                          <td contenteditable="true" data-field="Precio">${plato.Precio}</td>
+                          <td contenteditable="true" data-field="Hora">${plato.Hora}</td>
+                          <td>
+                            <button class="btn btn-danger" data-key="${key}" data-action="eliminar">Eliminar</button>
+                            <button class="btn btn-warning" data-key="${key}" data-action="modificar">Guardar Cambios</button>
+                          </td>
+                        </tr>`;
+          tablaBody.innerHTML += fila;
+        }
+      }
+
+      document.querySelectorAll('.btn-danger').forEach(btn => {
+        btn.addEventListener('click', eliminarRegistro);
+      });
+
+      document.querySelectorAll('.btn-warning').forEach(btn => {
+        btn.addEventListener('click', guardarCambios);
+      });
+    });
+
+    function eliminarRegistro(event) {
+      const key = event.target.getAttribute('data-key');
+      remove(ref(database, `Pablo_Pullopaxi/${key}`));
+    }
+
+    function guardarCambios(event) {
+      const key = event.target.getAttribute('data-key');
+      const fila = document.getElementById(`fila-${key}`);
+      const nombre = fila.querySelector('[data-field="Nombre"]').textContent;
+      const descripcion = fila.querySelector('[data-field="Descripcion"]').textContent;
+      const precio = fila.querySelector('[data-field="Precio"]').textContent;
+      const hora = fila.querySelector('[data-field="Hora"]').textContent;
+
+      update(ref(database, `Pablo_Pullopaxi/${key}`), {
+        Nombre: nombre,
+        Descripcion: descripcion,
+        Precio: precio,
+        Hora: hora
+      });
+    }
+  </script>
+  <style>
+      body {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        margin: 0;
+        background: url('https://images.pexels.com/photos/958545/pexels-photo-958545.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1') no-repeat center center fixed;
+        background-size: cover;
+      }
+
+      #container {
+        text-align: center;
+        background-color: rgba(255, 255, 255, 0.8); /* Fondo blanco semi-transparente para que el texto sea legible */
+        padding: 20px;
+        border-radius: 10px;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+      }
+
+      th, td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+      }
+
+      th {
+        background-color: #f2f2f2;
+      }
+
+      tr:hover {
+        background-color: #f5f5f5;
+      }
+
+    /* Estilos aquí... */
+  </style>
+</head>
+<body>
+  <div id="container">
+    <h1>CRUD Restaurante</h1>
+
+    <form id="crud-form">
+      <label for="nombre">Nombre:</label>
+      <input type="text" id="nombre" required>
+
+      <label for="descripcion">Descripcion:</label>
+      <input type="text" id="descripcion" required>
+
+      <label for="precio">Precio:</label>
+      <input type="number" id="precio" step="0.01" required>
+
+      <label for="hora">Hora:</label>
+      <input type="time" id="hora" required>
+
+      <button type="button" class="btn btn-primary" onclick="crearRegistro()">Guardar</button>
+    </form>
+
+    <div id="platosList"></div>
+
+    <table id="tablaPlatos">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Descripcion</th>
+          <th>Precio</th>
+          <th>Hora</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="tablaBody"></tbody>
+    </table>
+  </div>
+</body>
+</html>
